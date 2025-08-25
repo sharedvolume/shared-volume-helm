@@ -1,0 +1,50 @@
+# Example values for development environment
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: "standard"
+
+sharedVolume:
+  enabled: true
+  image:
+    tag: "dev"
+  replicaCount: 1
+  
+  webhook:
+    enabled: true
+    certManager:
+      enabled: true
+  
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: false
+  
+  networkPolicy:
+    enabled: false
+
+nfs-server:
+  enabled: true
+  image:
+    tag: "dev"
+  replicaCount: 1
+  
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: false
+
+# cert-manager for development
+cert-manager:
+  enabled: true
+  installCRDs: true
+  webhook:
+    replicaCount: 1
+  cainjector:
+    replicaCount: 1
+
+# CSI Driver NFS for development
+csi-driver-nfs:
+  enabled: true
+  controller:
+    replicas: 1

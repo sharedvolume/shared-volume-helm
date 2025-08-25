@@ -1,0 +1,194 @@
+# Example values for production environment
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: "fast-ssd"
+
+sharedVolume:
+  enabled: true
+  image:
+    tag: "v0.1.0"
+  replicaCount: 2
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  webhook:
+    enabled: true
+    certManager:
+      enabled: true
+    failurePolicy: Fail
+  
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: "monitoring"
+  
+  networkPolicy:
+    enabled: true
+  
+  leaderElection:
+    enabled: true
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - shared-volume
+          topologyKey: kubernetes.io/hostname
+
+nfs-server:
+  enabled: true
+  image:
+    tag: "v0.1.0"
+  replicaCount: 2
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      namespace: "monitoring"
+  
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+            - key: kubernetes.io/arch
+              operator: In
+              values:
+                - amd64
+                - arm64
+            - key: kubernetes.io/os
+              operator: In
+              values:
+                - linux
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app.kubernetes.io/name
+              operator: In
+              values:
+              - nfs-server
+          topologyKey: kubernetes.io/hostname
+
+# cert-manager for production with HA
+cert-manager:
+  enabled: true
+  installCRDs: true
+  
+  # High availability configuration
+  webhook:
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+    
+  cainjector:
+    replicaCount: 2
+    resources:
+      requests:
+        cpu: 10m
+        memory: 32Mi
+      limits:
+        cpu: 100m
+        memory: 128Mi
+        
+  # Controller with HA
+  replicaCount: 2
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# CSI Driver NFS for production with HA
+csi-driver-nfs:
+  enabled: true
+  
+  # High availability controller
+  controller:
+    replicas: 2
+    resources:
+      csiProvisioner:
+        limits:
+          cpu: 100m
+          memory: 300Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+      csiSnapshotter:
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+      livenessProbe:
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+      nfs:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+  
+  # Node configuration with resource limits
+  node:
+    resources:
+      livenessProbe:
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+      nodeDriverRegistrar:
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+      nfs:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi

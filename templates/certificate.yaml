@@ -1,0 +1,27 @@
+{{- if and .Values.sharedVolume.enabled .Values.sharedVolume.webhook.enabled .Values.sharedVolume.webhook.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "shared-volume.fullname" . }}-serving-cert
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "shared-volume.labels" . | nindent 4 }}
+spec:
+  dnsNames:
+  - {{ include "shared-volume.webhookServiceName" . }}.{{ .Release.Namespace }}.svc
+  - {{ include "shared-volume.webhookServiceName" . }}.{{ .Release.Namespace }}.svc.{{ .Values.global.kubernetesClusterDomain }}
+  issuerRef:
+    kind: Issuer
+    name: {{ include "shared-volume.fullname" . }}-selfsigned-issuer
+  secretName: {{ include "shared-volume.fullname" . }}-webhook-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "shared-volume.fullname" . }}-selfsigned-issuer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "shared-volume.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+{{- end }}

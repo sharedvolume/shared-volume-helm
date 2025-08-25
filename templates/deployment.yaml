@@ -1,0 +1,114 @@
+{{- if .Values.sharedVolume.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shared-volume.fullname" . }}-controller-manager
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "shared-volume.labels" . | nindent 4 }}
+    control-plane: controller-manager
+spec:
+  replicas: {{ .Values.sharedVolume.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "shared-volume.selectorLabels" . | nindent 6 }}
+      control-plane: controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        {{- include "shared-volume.selectorLabels" . | nindent 8 }}
+        control-plane: controller-manager
+    spec:
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "shared-volume.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: manager
+        image: {{ include "shared-volume.image" . }}
+        imagePullPolicy: {{ .Values.sharedVolume.image.pullPolicy }}
+        command:
+        - /manager
+        args:
+        - --leader-elect={{ .Values.sharedVolume.leaderElection.enabled }}
+        {{- if .Values.sharedVolume.leaderElection.enabled }}
+        - --leader-elect-lease-duration={{ .Values.sharedVolume.leaderElection.leaseDuration }}
+        - --leader-elect-renew-deadline={{ .Values.sharedVolume.leaderElection.renewDeadline }}
+        - --leader-elect-retry-period={{ .Values.sharedVolume.leaderElection.retryPeriod }}
+        {{- end }}
+        - --health-probe-bind-address=:{{ .Values.sharedVolume.healthProbe.port }}
+        {{- if .Values.sharedVolume.metrics.enabled }}
+        - --metrics-bind-address=:{{ .Values.sharedVolume.metrics.port }}
+        {{- else }}
+        - --metrics-bind-address=0
+        {{- end }}
+        env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ .Values.global.kubernetesClusterDomain }}
+        ports:
+        {{- if .Values.sharedVolume.webhook.enabled }}
+        - containerPort: {{ .Values.sharedVolume.webhook.port }}
+          name: webhook-server
+          protocol: TCP
+        {{- end }}
+        {{- if .Values.sharedVolume.metrics.enabled }}
+        - containerPort: {{ .Values.sharedVolume.metrics.port }}
+          name: http-metrics
+          protocol: TCP
+        {{- end }}
+        - containerPort: {{ .Values.sharedVolume.healthProbe.port }}
+          name: health-probe
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: {{ .Values.sharedVolume.healthProbe.port }}
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: {{ .Values.sharedVolume.healthProbe.port }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          {{- toYaml .Values.sharedVolume.resources | nindent 10 }}
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - "ALL"
+        {{- if .Values.sharedVolume.webhook.enabled }}
+        volumeMounts:
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: cert
+          readOnly: true
+        {{- end }}
+      {{- if .Values.sharedVolume.webhook.enabled }}
+      volumes:
+      - name: cert
+        secret:
+          defaultMode: 420
+          secretName: {{ include "shared-volume.fullname" . }}-webhook-server-cert
+      {{- end }}
+      terminationGracePeriodSeconds: 10
+      {{- with .Values.sharedVolume.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.sharedVolume.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.sharedVolume.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
