@@ -24,6 +24,21 @@ jobs:
       with:
         version: '3.12.1'
 
+    - name: Set version from tag
+      run: |
+        # Extract version from tag (remove 'v' prefix)
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Chart version: $VERSION"
+
+    - name: Update Chart.yaml version
+      run: |
+        # Update both version and appVersion in Chart.yaml
+        sed -i "s/^version:.*/version: $VERSION/" Chart.yaml
+        sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" Chart.yaml
+        echo "Updated Chart.yaml:"
+        grep -E "^(version|appVersion):" Chart.yaml
+
     - name: Add Helm repositories
       run: |
         helm repo add jetstack https://charts.jetstack.io
@@ -41,8 +56,12 @@ jobs:
 
     - name: Package chart
       run: |
+        # Package the chart with the updated version
         helm package .
+        # Verify the package name
         ls -la *.tgz
+        # The package should now be named shared-volume-$VERSION.tgz
+        echo "Generated package: shared-volume-$VERSION.tgz"
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1

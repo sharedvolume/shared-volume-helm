@@ -2,8 +2,8 @@ apiVersion: v2
 name: shared-volume
 description: A Kubernetes operator umbrella chart for managing shared volumes with NFS integration
 type: application
-version: 0.1.0
-appVersion: "v0.1.0"
+version: 0.0.0-dev
+appVersion: "0.0.0-dev"
 keywords:
   - kubernetes
   - operator
