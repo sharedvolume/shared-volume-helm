@@ -36,6 +36,9 @@ sharedVolume:
   leaderElection:
     enabled: true
   
+  # Use stable volume syncer image for production
+  volumeSyncerImage: "sharedvolume/volume-syncer:0.0.18"
+  
   affinity:
     podAntiAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
@@ -62,6 +65,9 @@ nfs-server:
     requests:
       cpu: 100m
       memory: 256Mi
+  
+  # Use specific NFS server image for production
+  nfsServerImage: "sharedvolume/nfs-server:0.0.3-alpine-3.22.0"
   
   metrics:
     enabled: true

@@ -52,6 +52,13 @@ spec:
         {{- else }}
         - --metrics-bind-address=0
         {{- end }}
+        env:
+        - name: KUBERNETES_CLUSTER_DOMAIN
+          value: {{ .Values.global.kubernetesClusterDomain | default "cluster.local" }}
+        {{- if .Values.nfsServerImage }}
+        - name: NFS_SERVER_IMAGE
+          value: "{{ .Values.nfsServerImage }}"
+        {{- end }}
         ports:
         {{- if .Values.metrics.enabled }}
         - containerPort: {{ .Values.metrics.port }}

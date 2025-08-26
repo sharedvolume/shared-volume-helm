@@ -18,6 +18,33 @@ This is an umbrella chart that includes:
 
 ## Installation
 
+### Install from GitHub Repository
+
+Install the latest stable version from GitHub:
+
+```bash
+# Install the latest release
+helm install shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/v0.1.0.tar.gz
+
+# Or install a specific version
+helm install shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/v0.1.0.tar.gz
+```
+
+### Install from Local Repository
+
+If you have cloned the repository locally:
+
+```bash
+# Clone the repository
+git clone https://github.com/sharedvolume/shared-volume-helm.git
+cd shared-volume-helm
+
+# Install from local directory
+helm install shared-volume ./
+```
+
 ### Add Required Helm Repositories
 
 Before installing, add the required Helm repositories:
@@ -36,12 +63,23 @@ helm repo update
 ### Basic Installation
 
 ```bash
+# Install from GitHub (recommended)
+helm install shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/v0.1.0.tar.gz
+
+# Or install from local directory
 helm install shared-volume ./shared-volume-helm
 ```
 
 ### Installation with Custom Values
 
 ```bash
+# Install with production values from GitHub
+helm install shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/v0.1.0.tar.gz \
+  -f https://raw.githubusercontent.com/sharedvolume/shared-volume-helm/v0.1.0/values-prod.yaml
+
+# Or install from local directory with custom values
 helm install shared-volume ./shared-volume-helm -f values-prod.yaml
 ```
 
@@ -49,7 +87,44 @@ helm install shared-volume ./shared-volume-helm -f values-prod.yaml
 
 ```bash
 kubectl create namespace shared-volume-system
-helm install shared-volume ./shared-volume-helm -n shared-volume-system
+helm install shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/v0.1.0.tar.gz \
+  -n shared-volume-system
+```
+
+### Available Versions
+
+You can install specific versions by changing the tag in the URL:
+
+```bash
+# Install version v0.1.0
+helm install shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/v0.1.0.tar.gz
+
+# Install latest main branch (development)
+helm install shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/main.tar.gz
+```
+
+## Upgrading
+
+### Upgrade to Latest Version
+
+```bash
+# Upgrade from GitHub
+helm upgrade shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/v0.1.0.tar.gz
+
+# Or upgrade from local directory
+helm upgrade shared-volume ./shared-volume-helm
+```
+
+### Upgrade with New Values
+
+```bash
+helm upgrade shared-volume \
+  https://github.com/sharedvolume/shared-volume-helm/archive/v0.1.0.tar.gz \
+  -f values-prod.yaml
 ```
 
 ## Configuration

@@ -66,6 +66,12 @@ sharedVolume:
     renewDeadline: 10s
     retryPeriod: 2s
 
+  # Volume Syncer Image configuration
+  # This controls what image the Shared Volume Controller will use when creating volume syncer pods
+  # If set, this will be passed as VOLUME_SYNCER_IMAGE environment variable
+  # to the controller. If not set, controller will use default: sharedvolume/volume-syncer:0.0.18
+  volumeSyncerImage: ""
+
 # NFS Server dependency configuration
 nfs-server:
   enabled: true
@@ -103,6 +109,12 @@ nfs-server:
   
   leaderElection:
     enabled: true
+  
+  # NFS Server Image configuration
+  # This controls what image the NFS Server Controller will use when creating NFS server pods
+  # If set, this will be passed as NFS_SERVER_IMAGE environment variable
+  # to the controller. If not set, controller will use default: sharedvolume/nfs-server:0.0.3-alpine-3.22.0
+  nfsServerImage: ""
 
 # cert-manager dependency configuration
 cert-manager:

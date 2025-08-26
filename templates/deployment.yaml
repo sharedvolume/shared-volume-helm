@@ -52,6 +52,10 @@ spec:
         env:
         - name: KUBERNETES_CLUSTER_DOMAIN
           value: {{ .Values.global.kubernetesClusterDomain }}
+        {{- if .Values.sharedVolume.volumeSyncerImage }}
+        - name: VOLUME_SYNCER_IMAGE
+          value: "{{ .Values.sharedVolume.volumeSyncerImage }}"
+        {{- end }}
         ports:
         {{- if .Values.sharedVolume.webhook.enabled }}
         - containerPort: {{ .Values.sharedVolume.webhook.port }}

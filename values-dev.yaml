@@ -22,12 +22,18 @@ sharedVolume:
   
   networkPolicy:
     enabled: false
+  
+  # Use latest volume syncer image for development
+  volumeSyncerImage: "sharedvolume/volume-syncer:latest"
 
 nfs-server:
   enabled: true
   image:
     tag: "dev"
   replicaCount: 1
+  
+  # Use specific NFS server image for development
+  nfsServerImage: "sharedvolume/nfs-server:dev-alpine-3.22.0"
   
   metrics:
     enabled: true
