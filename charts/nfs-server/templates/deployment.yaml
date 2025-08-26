@@ -1,98 +1,23 @@
+# This is a placeholder deployment for the local nfs-server chart
+# The actual controller deployment is handled by the main shared-volume chart
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "nfs-server.fullname" . }}-controller-manager
-  namespace: {{ .Release.Namespace }}
+  name: {{ include "nfs-server.fullname" . }}-placeholder
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     {{- include "nfs-server.labels" . | nindent 4 }}
-    control-plane: controller-manager
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: 0  # This is just a placeholder
   selector:
     matchLabels:
-      {{- include "nfs-server.selectorLabels" . | nindent 6 }}
-      control-plane: controller-manager
+      app: placeholder
   template:
     metadata:
-      annotations:
-        kubectl.kubernetes.io/default-container: manager
       labels:
-        {{- include "nfs-server.selectorLabels" . | nindent 8 }}
-        control-plane: controller-manager
+        app: placeholder
     spec:
-      {{- with .Values.global.imagePullSecrets | default list }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "nfs-server.serviceAccountName" . }}
-      {{- with .Values.affinity }}
-      affinity:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      securityContext:
-        runAsNonRoot: true
-        seccompProfile:
-          type: RuntimeDefault
       containers:
-      - name: manager
-        image: {{ include "nfs-server.image" . }}
-        imagePullPolicy: {{ .Values.image.pullPolicy }}
-        command:
-        - /manager
-        args:
-        - --leader-elect={{ .Values.leaderElection.enabled }}
-        {{- if .Values.leaderElection.enabled }}
-        - --leader-elect-lease-duration={{ .Values.leaderElection.leaseDuration }}
-        - --leader-elect-renew-deadline={{ .Values.leaderElection.renewDeadline }}
-        - --leader-elect-retry-period={{ .Values.leaderElection.retryPeriod }}
-        {{- end }}
-        - --health-probe-bind-address=:{{ .Values.healthProbe.port }}
-        {{- if .Values.metrics.enabled }}
-        - --metrics-bind-address=:{{ .Values.metrics.port }}
-        {{- else }}
-        - --metrics-bind-address=0
-        {{- end }}
-        env:
-        - name: KUBERNETES_CLUSTER_DOMAIN
-          value: {{ .Values.global.kubernetesClusterDomain | default "cluster.local" }}
-        {{- if .Values.nfsServerImage }}
-        - name: NFS_SERVER_IMAGE
-          value: "{{ .Values.nfsServerImage }}"
-        {{- end }}
-        ports:
-        {{- if .Values.metrics.enabled }}
-        - containerPort: {{ .Values.metrics.port }}
-          name: http-metrics
-          protocol: TCP
-        {{- end }}
-        - containerPort: {{ .Values.healthProbe.port }}
-          name: health-probe
-          protocol: TCP
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: {{ .Values.healthProbe.port }}
-          initialDelaySeconds: 15
-          periodSeconds: 20
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: {{ .Values.healthProbe.port }}
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        resources:
-          {{- toYaml .Values.resources | nindent 10 }}
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - "ALL"
-      terminationGracePeriodSeconds: 10
-      {{- with .Values.nodeSelector }}
-      nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      {{- with .Values.tolerations }}
-      tolerations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+      - name: placeholder
+        image: busybox:1.28
+        command: ['sh', '-c', 'echo "placeholder" && sleep 1']

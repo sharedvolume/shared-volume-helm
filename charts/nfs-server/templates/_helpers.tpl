@@ -7,6 +7,8 @@ Expand the name of the chart.
 
 {{/*
 Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
 */}}
 {{- define "nfs-server.fullname" -}}
 {{- if .Values.fullnameOverride }}
@@ -53,27 +55,15 @@ Create the name of the service account to use
 */}}
 {{- define "nfs-server.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (printf "%s-controller-manager" (include "nfs-server.fullname" .)) .Values.serviceAccount.name }}
+{{- default (include "nfs-server.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
 
 {{/*
-Create the image name
+Return the proper image name
 */}}
 {{- define "nfs-server.image" -}}
-{{- $registry := .Values.global.imageRegistry | default .Values.image.registry -}}
-{{- if $registry }}
-{{- printf "%s/%s:%s" $registry .Values.image.repository (.Values.image.tag | default .Chart.AppVersion) }}
-{{- else }}
-{{- printf "%s:%s" .Values.image.repository (.Values.image.tag | default .Chart.AppVersion) }}
-{{- end }}
-{{- end }}
-
-{{/*
-Create metrics service name
-*/}}
-{{- define "nfs-server.metricsServiceName" -}}
-{{- printf "%s-metrics-service" (include "nfs-server.fullname" .) }}
+{{- printf "%s/%s:%s" .Values.image.registry .Values.image.repository .Values.image.tag -}}
 {{- end }}

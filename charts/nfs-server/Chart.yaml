@@ -1,20 +1,6 @@
 apiVersion: v2
 name: nfs-server
-description: A Kubernetes operator for managing NFS servers
+description: A Helm chart for NFS Server Controller
 type: application
 version: 0.1.0
-appVersion: "v0.1.0"
-keywords:
-  - kubernetes
-  - operator
-  - nfs
-  - storage
-home: https://github.com/sharedvolume/nfs-server-controller
-sources:
-  - https://github.com/sharedvolume/nfs-server-controller
-maintainers:
-  - name: SharedVolume Team
-    email: support@sharedvolume.io
-annotations:
-  category: Storage
-  licenses: MIT
+appVersion: "1.0.0"

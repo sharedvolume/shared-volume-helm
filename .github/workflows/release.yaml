@@ -34,9 +34,15 @@ jobs:
       run: |
         helm dependency update
 
+    - name: Run comprehensive tests
+      run: |
+        # Run our comprehensive test script
+        ./test-chart.sh
+
     - name: Package chart
       run: |
         helm package .
+        ls -la *.tgz
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
@@ -46,8 +52,3 @@ jobs:
         generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
-
-    - name: Verify installation
-      run: |
-        # Test that the packaged chart can be installed
-        helm install test-release ./shared-volume-helm-*.tgz --dry-run --debug

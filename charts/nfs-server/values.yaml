@@ -1,11 +1,25 @@
-# Default values for nfs-server chart
+# Default values for nfs-server.
+# This is a YAML-formatted file.
+
+replicaCount: 1
+
 image:
   registry: docker.io
   repository: sharedvolume/nfs-server-controller
   tag: "latest"
   pullPolicy: IfNotPresent
 
-replicaCount: 1
+global:
+  imagePullSecrets: []
+  kubernetesClusterDomain: cluster.local
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+rbac:
+  create: true
 
 resources:
   limits:
@@ -32,35 +46,15 @@ affinity:
             values:
               - linux
 
-serviceAccount:
-  create: true
-  annotations: {}
-  name: ""
-
-rbac:
-  create: true
-
-metrics:
+leaderElection:
   enabled: true
-  port: 8080
-  serviceMonitor:
-    enabled: false
-    namespace: ""
-    interval: 30s
-    scrapeTimeout: 10s
 
 healthProbe:
   port: 8081
 
-leaderElection:
+metrics:
   enabled: true
-  leaseDuration: 15s
-  renewDeadline: 10s
-  retryPeriod: 2s
+  port: 8080
 
-# NFS Server Image configuration for the controller
-nfsServerImage:
-  # If set, this will be passed as NFS_SERVER_IMAGE environment variable
-  # to the controller. If not set, the controller will use its default image.
-  # Example: "sharedvolume/nfs-server:0.0.3-alpine-3.22.0"
-  tag: ""
+# NFS Server Image configuration for pods managed by this controller
+nfsServerImage: ""
