@@ -1,0 +1,53 @@
+name: Release Helm Chart
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure Git
+      run: |
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: '3.12.1'
+
+    - name: Add Helm repositories
+      run: |
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+        helm repo update
+
+    - name: Update dependencies
+      run: |
+        helm dependency update
+
+    - name: Package chart
+      run: |
+        helm package .
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          *.tgz
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
+
+    - name: Verify installation
+      run: |
+        # Test that the packaged chart can be installed
+        helm install test-release ./shared-volume-helm-*.tgz --dry-run --debug

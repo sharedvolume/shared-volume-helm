@@ -1,15 +1,17 @@
 # Shared Volume Helm Chart
 
-This Helm chart deploys the Shared Volume Controller along with its dependencies.
+This Helm chart deploys the Shared Volume Controller along with its dependencies as a **complete, self-contained package**.
 
 ## Overview
 
 This is an umbrella chart that includes:
 
 - **shared-volume-controller**: The main operator for managing SharedVolume and ClusterSharedVolume resources
-- **nfs-server-controller**: A dependency chart for managing NFS servers
-- **cert-manager**: Certificate management for webhook TLS certificates
-- **csi-driver-nfs**: CSI driver for NFS volume provisioning
+- **nfs-server-controller**: A dependency chart for managing NFS servers (bundled)
+- **cert-manager**: Certificate management for webhook TLS certificates (bundled)
+- **csi-driver-nfs**: CSI driver for NFS volume provisioning (bundled)
+
+**✅ No external repositories required** - All dependencies are bundled in the package!
 
 ## Prerequisites
 
@@ -43,21 +45,6 @@ cd shared-volume-helm
 
 # Install from local directory
 helm install shared-volume ./
-```
-
-### Add Required Helm Repositories
-
-Before installing, add the required Helm repositories:
-
-```bash
-# Add jetstack repository for cert-manager
-helm repo add jetstack https://charts.jetstack.io
-
-# Add CSI driver NFS repository
-helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
-
-# Update repositories
-helm repo update
 ```
 
 ### Basic Installation
@@ -360,33 +347,24 @@ helm package ./shared-volume-helm
 
 ## Dependencies
 
-This chart automatically installs the following dependencies:
-- **cert-manager**: For managing TLS certificates for webhooks
-- **csi-driver-nfs**: For NFS CSI driver functionality
-- **nfs-server-controller**: For managing NFS servers
+This chart is a self-contained umbrella chart that includes all dependencies bundled together:
 
-### Manual Dependency Installation (Alternative)
+- **cert-manager**: For managing TLS certificates for webhooks (bundled)
+- **csi-driver-nfs**: For NFS CSI driver functionality (bundled)  
+- **nfs-server-controller**: For managing NFS servers (bundled)
 
-If you prefer to install dependencies manually:
+**No external Helm repositories required!** All dependencies are included in the package.
 
-```bash
-# Install cert-manager
-helm install cert-manager jetstack/cert-manager \
-  --namespace cert-manager \
-  --create-namespace \
-  --version v1.13.1 \
-  --set installCRDs=true
+### Dependency Management
 
-# Install CSI driver NFS
-helm install csi-driver-nfs csi-driver-nfs/csi-driver-nfs \
-  --namespace kube-system \
-  --version 4.11.0
+The chart automatically handles all dependency installation and configuration. When you install this chart, it will:
 
-# Then install shared-volume with dependencies disabled
-helm install shared-volume ./shared-volume-helm \
-  --set cert-manager.enabled=false \
-  --set csi-driver-nfs.enabled=false
-```
+1. **Install cert-manager** with the correct configuration
+2. **Install csi-driver-nfs** with NFS CSI driver support
+3. **Install nfs-server-controller** for NFS server management
+4. **Install shared-volume-controller** as the main operator
+
+All components are configured to work together seamlessly.
 
 ## License
 
