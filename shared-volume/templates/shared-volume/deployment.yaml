@@ -1,0 +1,100 @@
+{{- if .Values.sharedVolume.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "shared-volume.sharedVolume.labels" . | nindent 4 }}
+  name: shared-volume-controller-controller-manager
+  namespace: {{ .Values.sharedVolume.namespace }}
+spec:
+  replicas: {{ .Values.sharedVolume.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "shared-volume.sharedVolume.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "shared-volume.sharedVolume.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- include "shared-volume.imagePullSecrets" . | nindent 6 }}
+      containers:
+      - args:
+        - --metrics-bind-address=:8443
+        - --leader-elect
+        - --health-probe-bind-address=:8081
+        - --metrics-cert-path=/tmp/k8s-metrics-server/metrics-certs
+        - --webhook-cert-path=/tmp/k8s-webhook-server/serving-certs
+        command:
+        - /manager
+        env:
+        - name: VOLUME_SYNCER_IMAGE
+          value: {{ .Values.sharedVolume.volumeSyncerImage | default "sharedvolume/volume-syncer:0.0.18" }}
+        image: {{ include "shared-volume.sharedVolume.image" . }}
+        imagePullPolicy: {{ .Values.sharedVolume.image.pullPolicy }}
+        {{- with .Values.sharedVolume.healthProbe.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        name: manager
+        ports:
+        - containerPort: 9443
+          name: webhook-server
+          protocol: TCP
+        {{- with .Values.sharedVolume.healthProbe.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.sharedVolume.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.sharedVolume.containerSecurityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - mountPath: /tmp/k8s-metrics-server/metrics-certs
+          name: metrics-certs
+          readOnly: true
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: webhook-certs
+          readOnly: true
+      {{- with .Values.sharedVolume.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "shared-volume.sharedVolume.serviceAccountName" . }}
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: metrics-certs
+        secret:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          - key: tls.crt
+            path: tls.crt
+          - key: tls.key
+            path: tls.key
+          optional: false
+          secretName: {{ .Values.sharedVolume.certManager.metricsCert.secretName }}
+      - name: webhook-certs
+        secret:
+          secretName: {{ .Values.sharedVolume.certManager.webhookCert.secretName }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,8 @@
+{{- if .Values.nfsServer.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    {{- include "shared-volume.nfsServer.labels" . | nindent 4 }}
+  name: {{ .Values.nfsServer.namespace }}
+{{- end }}

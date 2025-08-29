@@ -1,0 +1,45 @@
+{{- if and .Values.sharedVolume.enabled .Values.sharedVolume.certManager.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    {{- include "shared-volume.sharedVolume.labels" . | nindent 4 }}
+  name: shared-volume-controller-metrics-certs
+  namespace: {{ .Values.sharedVolume.namespace }}
+spec:
+  dnsNames:
+  {{- range .Values.sharedVolume.certManager.metricsCert.dnsNames }}
+  - {{ . }}
+  {{- end }}
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.sharedVolume.certManager.issuer.name }}
+  secretName: {{ .Values.sharedVolume.certManager.metricsCert.secretName }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    {{- include "shared-volume.sharedVolume.labels" . | nindent 4 }}
+  name: shared-volume-controller-serving-cert
+  namespace: {{ .Values.sharedVolume.namespace }}
+spec:
+  dnsNames:
+  {{- range .Values.sharedVolume.certManager.webhookCert.dnsNames }}
+  - {{ . }}
+  {{- end }}
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.sharedVolume.certManager.issuer.name }}
+  secretName: {{ .Values.sharedVolume.certManager.webhookCert.secretName }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    {{- include "shared-volume.sharedVolume.labels" . | nindent 4 }}
+  name: {{ .Values.sharedVolume.certManager.issuer.name }}
+  namespace: {{ .Values.sharedVolume.namespace }}
+spec:
+  selfSigned: {}
+{{- end }}

@@ -1,0 +1,169 @@
+{{- if .Values.nfsServer.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nfs-server-controller-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims
+  - pods
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumes
+  verbs:
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - replicasets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - storage.k8s.io
+  resources:
+  - storageclasses
+  verbs:
+  - list
+  - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nfs-server-controller-metrics-auth-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nfs-server-controller-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{- include "shared-volume.nfsServer.labels" . | nindent 4 }}
+  name: nfs-server-controller-nfsserver-admin-role
+rules:
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers
+  verbs:
+  - '*'
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{- include "shared-volume.nfsServer.labels" . | nindent 4 }}
+  name: nfs-server-controller-nfsserver-editor-role
+rules:
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    {{- include "shared-volume.nfsServer.labels" . | nindent 4 }}
+  name: nfs-server-controller-nfsserver-viewer-role
+rules:
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers/status
+  verbs:
+  - get
+{{- end }}

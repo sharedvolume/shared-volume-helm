@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "shared-volume.fullname" . }}-test"
+  labels:
+    {{- include "shared-volume.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  restartPolicy: Never
+  containers:
+  - name: test
+    image: busybox:1.35
+    command: 
+      - /bin/sh
+      - -c
+      - |
+        set -e
+        echo "Testing SharedVolume Helm Chart..."
+        
+        {{- if .Values.nfsServer.enabled }}
+        echo "Checking NFS Server Controller deployment..."
+        if kubectl get deployment nfs-server-controller-controller-manager -n {{ .Values.nfsServer.namespace }} --timeout=30s; then
+          echo "✓ NFS Server Controller deployment found"
+        else
+          echo "✗ NFS Server Controller deployment not found"
+          exit 1
+        fi
+        
+        echo "Checking NFS Server CRD..."
+        if kubectl get crd nfsservers.sharedvolume.io --timeout=30s; then
+          echo "✓ NFS Server CRD found"
+        else
+          echo "✗ NFS Server CRD not found"
+          exit 1
+        fi
+        {{- else }}
+        echo "NFS Server Controller is disabled, skipping tests..."
+        {{- end }}
+        
+        {{- if .Values.sharedVolume.enabled }}
+        echo "Checking Shared Volume Controller deployment..."
+        if kubectl get deployment shared-volume-controller-controller-manager -n {{ .Values.sharedVolume.namespace }} --timeout=30s; then
+          echo "✓ Shared Volume Controller deployment found"
+        else
+          echo "✗ Shared Volume Controller deployment not found"
+          exit 1
+        fi
+        
+        echo "Checking Shared Volume CRDs..."
+        if kubectl get crd sharedvolumes.sv.sharedvolume.io --timeout=30s; then
+          echo "✓ SharedVolume CRD found"
+        else
+          echo "✗ SharedVolume CRD not found"
+          exit 1
+        fi
+        
+        if kubectl get crd clustersharedvolumes.sv.sharedvolume.io --timeout=30s; then
+          echo "✓ ClusterSharedVolume CRD found"
+        else
+          echo "✗ ClusterSharedVolume CRD not found"
+          exit 1
+        fi
+        {{- else }}
+        echo "Shared Volume Controller is disabled, skipping tests..."
+        {{- end }}
+        
+        echo "All tests passed successfully!"
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 10m
+        memory: 64Mi

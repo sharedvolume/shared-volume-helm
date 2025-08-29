@@ -1,24 +1,36 @@
 # Shared Volume Helm Chart
 
-This Helm chart deploys the Shared Volume Controller along with its dependencies as a **complete, self-contained package**.
+This Helm chart deploys the Shared Volume Controller along with its dependencies.
 
 ## Overview
 
-This is an umbrella chart that includes:
+This chart includes:
 
 - **shared-volume-controller**: The main operator for managing SharedVolume and ClusterSharedVolume resources
 - **nfs-server-controller**: A dependency chart for managing NFS servers (bundled)
-- **cert-manager**: Certificate management for webhook TLS certificates (bundled)
-- **csi-driver-nfs**: CSI driver for NFS volume provisioning (bundled)
-
-**✅ No external repositories required** - All dependencies are bundled in the package!
 
 ## Prerequisites
 
 - Kubernetes 1.19+
 - Helm 3.x
+- **cert-manager**: Must be installed manually before installing this chart
+- **CSI NFS driver**: Must be installed manually before installing this chart
 
 ## Installation
+
+### Prerequisites Installation
+
+Before installing this chart, you must install cert-manager and CSI NFS driver:
+
+```bash
+# Install cert-manager
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.1/cert-manager.yaml
+
+# Install CSI NFS driver
+helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
+helm repo update
+helm install csi-driver-nfs csi-driver-nfs/csi-driver-nfs --namespace kube-system --version v4.11.0
+```
 
 ### Install from GitHub Repository
 
@@ -150,24 +162,6 @@ helm upgrade shared-volume \
 | `nfs-server.replicaCount` | Number of replicas | `1` |
 | `nfs-server.metrics.enabled` | Enable metrics | `true` |
 
-### cert-manager
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `cert-manager.enabled` | Enable cert-manager | `true` |
-| `cert-manager.installCRDs` | Install cert-manager CRDs | `true` |
-| `cert-manager.webhook.replicaCount` | Webhook replicas | `1` |
-| `cert-manager.cainjector.replicaCount` | CA injector replicas | `1` |
-
-### CSI Driver NFS
-
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `csi-driver-nfs.enabled` | Enable CSI driver NFS | `true` |
-| `csi-driver-nfs.controller.replicas` | Controller replicas | `1` |
-| `csi-driver-nfs.feature.enableFSGroupPolicy` | Enable FSGroup policy | `true` |
-| `csi-driver-nfs.feature.enableInlineVolume` | Enable inline volumes | `false` |
-
 ## Examples
 
 ### Development Environment
@@ -185,13 +179,6 @@ sharedVolume:
 nfs-server:
   image:
     tag: "dev"
-
-cert-manager:
-  enabled: true
-  installCRDs: true
-
-csi-driver-nfs:
-  enabled: true
 ```
 
 ### Production Environment
@@ -218,20 +205,6 @@ nfs-server:
   metrics:
     serviceMonitor:
       enabled: true
-
-cert-manager:
-  enabled: true
-  installCRDs: true
-  webhook:
-    replicaCount: 2
-  cainjector:
-    replicaCount: 2
-  replicaCount: 2
-
-csi-driver-nfs:
-  enabled: true
-  controller:
-    replicas: 2
 ```
 
 ## Usage After Installation

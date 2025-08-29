@@ -41,8 +41,6 @@ jobs:
 
     - name: Add Helm repositories
       run: |
-        helm repo add jetstack https://charts.jetstack.io
-        helm repo add csi-driver-nfs https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts
         helm repo update
 
     - name: Update dependencies

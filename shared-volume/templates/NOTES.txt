@@ -1,0 +1,67 @@
+1. Get the application URL by running these commands:
+{{- if .Values.nfsServer.enabled }}
+
+   NFS Server Controller has been deployed in namespace: {{ .Values.nfsServer.namespace }}
+
+   To check the status of the NFS Server Controller:
+   kubectl get deployment nfs-server-controller-controller-manager -n {{ .Values.nfsServer.namespace }}
+
+   To view NFS Server resources:
+   kubectl get nfsservers --all-namespaces
+{{- end }}
+
+{{- if .Values.sharedVolume.enabled }}
+
+   Shared Volume Controller has been deployed in namespace: {{ .Values.sharedVolume.namespace }}
+
+   To check the status of the Shared Volume Controller:
+   kubectl get deployment shared-volume-controller-controller-manager -n {{ .Values.sharedVolume.namespace }}
+
+   To view Shared Volume resources:
+   kubectl get sharedvolumes --all-namespaces
+   kubectl get clustersharedvolumes
+
+   {{- if .Values.sharedVolume.certManager.enabled }}
+   
+   Certificate Manager integration is enabled. To check certificate status:
+   kubectl get certificates -n {{ .Values.sharedVolume.namespace }}
+   {{- end }}
+{{- end }}
+
+2. Example usage:
+
+   Create a SharedVolume:
+   cat <<EOF | kubectl apply -f -
+   apiVersion: sv.sharedvolume.io/v1alpha1
+   kind: SharedVolume
+   metadata:
+     name: example-shared-volume
+     namespace: default
+   spec:
+     mountPath: "/shared"
+     storage:
+       capacity: "10Gi"
+     syncInterval: "30s"
+   EOF
+
+   Create an NFS Server:
+   cat <<EOF | kubectl apply -f -
+   apiVersion: sharedvolume.io/v1alpha1
+   kind: NfsServer
+   metadata:
+     name: example-nfs-server
+     namespace: default
+   spec:
+     storage:
+       capacity: "20Gi"
+   EOF
+
+3. For more information about configuration options, see:
+   https://github.com/sharedvolume/shared-volume-helm
+
+4. To uninstall the chart:
+   helm uninstall {{ .Release.Name }}
+
+{{- if or .Values.nfsServer.enabled .Values.sharedVolume.enabled }}
+Note: Custom Resource Definitions (CRDs) and cluster-scoped resources may need to be manually cleaned up after uninstallation.
+{{- end }}

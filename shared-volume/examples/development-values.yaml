@@ -1,0 +1,41 @@
+# Development deployment values for shared-volume Helm chart
+# This configuration is optimized for development and testing environments
+
+nfsServer:
+  enabled: true
+  
+  image:
+    pullPolicy: IfNotPresent
+  
+  replicaCount: 1
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+
+sharedVolume:
+  enabled: true
+  
+  image:
+    pullPolicy: IfNotPresent
+  
+  replicaCount: 1
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 64Mi
+    requests:
+      cpu: 5m
+      memory: 32Mi
+  
+  certManager:
+    enabled: false
+
+# Development pod configuration
+podAnnotations:
+  development: "true"
