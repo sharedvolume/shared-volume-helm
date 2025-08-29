@@ -39,15 +39,6 @@ jobs:
         echo "Updated Chart.yaml:"
         grep -E "^(version|appVersion):" shared-volume/Chart.yaml
 
-    - name: Add Helm repositories
-      run: |
-        helm repo update
-
-    - name: Update dependencies
-      run: |
-        cd shared-volume
-        helm dependency update
-
     - name: Package Helm chart
       run: |
         cd shared-volume
