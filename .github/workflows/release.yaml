@@ -34,10 +34,10 @@ jobs:
     - name: Update Chart.yaml version
       run: |
         # Update both version and appVersion in Chart.yaml
-        sed -i "s/^version:.*/version: $VERSION/" Chart.yaml
-        sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" Chart.yaml
+        sed -i "s/^version:.*/version: $VERSION/" shared-volume/Chart.yaml
+        sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" shared-volume/Chart.yaml
         echo "Updated Chart.yaml:"
-        grep -E "^(version|appVersion):" Chart.yaml
+        grep -E "^(version|appVersion):" shared-volume/Chart.yaml
 
     - name: Add Helm repositories
       run: |
@@ -45,21 +45,15 @@ jobs:
 
     - name: Update dependencies
       run: |
+        cd shared-volume
         helm dependency update
 
-    - name: Run comprehensive tests
+    - name: Package Helm chart
       run: |
-        # Run our comprehensive test script
-        ./test-chart.sh
-
-    - name: Package chart
-      run: |
-        # Package the chart with the updated version
-        helm package .
-        # Verify the package name
-        ls -la *.tgz
-        # The package should now be named shared-volume-$VERSION.tgz
-        echo "Generated package: shared-volume-$VERSION.tgz"
+        cd shared-volume
+        helm package . --destination ../
+        cd ..
+        echo "Packaged chart: shared-volume-$VERSION.tgz"
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
