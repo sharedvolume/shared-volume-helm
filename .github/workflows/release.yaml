@@ -24,6 +24,11 @@ jobs:
       with:
         version: '3.12.1'
 
+    - name: Install yq
+      run: |
+        sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        sudo chmod +x /usr/local/bin/yq
+
     - name: Set version from tag
       run: |
         # Extract version from tag (remove 'v' prefix)
@@ -42,11 +47,17 @@ jobs:
     - name: Extract component versions
       run: |
         cd shared-volume
-        # Extract component versions from values.yaml
-        SHARED_VOLUME_TAG=$(grep -A5 "sharedVolume:" values.yaml | grep "tag:" | sed 's/.*tag: *"\(.*\)".*/\1/')
-        NFS_SERVER_TAG=$(grep -A5 "nfsServer:" values.yaml | grep "tag:" | sed 's/.*tag: *"\(.*\)".*/\1/')
-        NFS_SERVER_IMAGE=$(grep "nfsServerImage:" values.yaml | sed 's/.*nfsServerImage: *"\(.*\)".*/\1/')
-        VOLUME_SYNCER_IMAGE=$(grep "volumeSyncerImage:" values.yaml | sed 's/.*volumeSyncerImage: *"\(.*\)".*/\1/')
+        # Extract component versions from values.yaml with more precise parsing
+        SHARED_VOLUME_TAG=$(yq eval '.sharedVolume.image.tag' values.yaml)
+        NFS_SERVER_TAG=$(yq eval '.nfsServer.image.tag' values.yaml)
+        NFS_SERVER_IMAGE=$(yq eval '.nfsServer.nfsServerImage' values.yaml)
+        VOLUME_SYNCER_IMAGE=$(yq eval '.sharedVolume.volumeSyncerImage' values.yaml)
+        
+        # Remove quotes if present
+        SHARED_VOLUME_TAG=$(echo $SHARED_VOLUME_TAG | tr -d '"')
+        NFS_SERVER_TAG=$(echo $NFS_SERVER_TAG | tr -d '"')
+        NFS_SERVER_IMAGE=$(echo $NFS_SERVER_IMAGE | tr -d '"')
+        VOLUME_SYNCER_IMAGE=$(echo $VOLUME_SYNCER_IMAGE | tr -d '"')
         
         echo "SHARED_VOLUME_TAG=$SHARED_VOLUME_TAG" >> $GITHUB_ENV
         echo "NFS_SERVER_TAG=$NFS_SERVER_TAG" >> $GITHUB_ENV
