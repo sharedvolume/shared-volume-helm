@@ -3,7 +3,7 @@ name: shared-volume
 description: A Helm chart for SharedVolume and NFS Server controllers
 type: application
 version: 0.1.0
-appVersion: "0.0.229"
+appVersion: "0.1.0"
 keywords:
   - nfs
   - shared-volume

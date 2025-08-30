@@ -17,7 +17,7 @@ nfsServer:
   image:
     registry: docker.io
     repository: sharedvolume/nfs-server-controller
-    tag: "0.0.20"
+    tag: "0.1.0"
     pullPolicy: IfNotPresent
   
   # -- NFS Server controller namespace
@@ -27,7 +27,7 @@ nfsServer:
   replicaCount: 1
   
   # -- NFS server image for NFS server instances
-  nfsServerImage: "sharedvolume/nfs-server:0.0.3-alpine-3.22.0"
+  nfsServerImage: "sharedvolume/nfs-server:0.1.0-alpine-3.22.0"
   
   # -- NFS Server controller resource limits and requests
   resources:
@@ -104,7 +104,7 @@ sharedVolume:
   image:
     registry: docker.io
     repository: sharedvolume/shared-volume-controller
-    tag: "0.0.230"
+    tag: "0.1.0"
     pullPolicy: IfNotPresent
   
   # -- Shared Volume controller namespace
@@ -114,7 +114,7 @@ sharedVolume:
   replicaCount: 1
   
   # -- Volume syncer image for shared volume operations
-  volumeSyncerImage: "sharedvolume/volume-syncer:0.0.18"
+  volumeSyncerImage: "sharedvolume/volume-syncer:0.1.0"
   
   # -- Shared Volume controller resource limits and requests
   resources:
