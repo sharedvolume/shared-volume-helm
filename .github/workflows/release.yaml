@@ -39,6 +39,66 @@ jobs:
         echo "Updated Chart.yaml:"
         grep -E "^(version|appVersion):" shared-volume/Chart.yaml
 
+    - name: Extract component versions
+      run: |
+        cd shared-volume
+        # Extract component versions from values.yaml
+        SHARED_VOLUME_TAG=$(grep -A5 "sharedVolume:" values.yaml | grep "tag:" | sed 's/.*tag: *"\(.*\)".*/\1/')
+        NFS_SERVER_TAG=$(grep -A5 "nfsServer:" values.yaml | grep "tag:" | sed 's/.*tag: *"\(.*\)".*/\1/')
+        NFS_SERVER_IMAGE=$(grep "nfsServerImage:" values.yaml | sed 's/.*nfsServerImage: *"\(.*\)".*/\1/')
+        VOLUME_SYNCER_IMAGE=$(grep "volumeSyncerImage:" values.yaml | sed 's/.*volumeSyncerImage: *"\(.*\)".*/\1/')
+        
+        echo "SHARED_VOLUME_TAG=$SHARED_VOLUME_TAG" >> $GITHUB_ENV
+        echo "NFS_SERVER_TAG=$NFS_SERVER_TAG" >> $GITHUB_ENV
+        echo "NFS_SERVER_IMAGE=$NFS_SERVER_IMAGE" >> $GITHUB_ENV
+        echo "VOLUME_SYNCER_IMAGE=$VOLUME_SYNCER_IMAGE" >> $GITHUB_ENV
+        
+        echo "Component versions:"
+        echo "Shared Volume Controller: $SHARED_VOLUME_TAG"
+        echo "NFS Server Controller: $NFS_SERVER_TAG"
+        echo "NFS Server Image: $NFS_SERVER_IMAGE"
+        echo "Volume Syncer Image: $VOLUME_SYNCER_IMAGE"
+
+    - name: Generate install.yaml
+      run: |
+        cd shared-volume
+        # Generate install.yaml with default values
+        helm template shared-volume . > ../install.yaml
+        echo "Generated install.yaml with default values"
+        echo "Install file size: $(wc -l < ../install.yaml) lines"
+
+    - name: Create release notes
+      run: |
+        cat > release_notes.md << EOF
+        # Shared Volume Helm Chart v$VERSION
+        
+        ## Component Versions
+        
+        | Component | Version |
+        |-----------|---------|
+        | Shared Volume Controller | \`$SHARED_VOLUME_TAG\` |
+        | NFS Server Controller | \`$NFS_SERVER_TAG\` |
+        | NFS Server | \`$NFS_SERVER_IMAGE\` |
+        | Volume Syncer | \`$VOLUME_SYNCER_IMAGE\` |
+        
+        ## Installation
+        
+        \`\`\`bash
+        # Install from this release
+        helm install shared-volume \\
+          https://github.com/sharedvolume/shared-volume-helm/releases/download/v$VERSION/shared-volume-$VERSION.tgz
+        
+        # Or apply the pre-rendered YAML
+        kubectl apply -f https://github.com/sharedvolume/shared-volume-helm/releases/download/v$VERSION/install.yaml
+        \`\`\`
+        
+        ## Files
+        
+        - \`shared-volume-$VERSION.tgz\` - Helm chart package
+        - \`install.yaml\` - Pre-rendered Kubernetes manifests with default values
+        
+        EOF
+
     - name: Package Helm chart
       run: |
         cd shared-volume
@@ -51,6 +111,7 @@ jobs:
       with:
         files: |
           *.tgz
-        generate_release_notes: true
+          install.yaml
+        body_path: release_notes.md
       env:
         GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}
