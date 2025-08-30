@@ -1,0 +1,20 @@
+apiVersion: v2
+name: shared-volume
+description: A Helm chart for SharedVolume and NFS Server controllers
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - nfs
+  - shared-volume
+  - storage
+  - kubernetes
+home: https://github.com/sharedvolume/shared-volume-helm
+sources:
+  - https://github.com/sharedvolume/shared-volume-helm
+maintainers:
+  - name: SharedVolume Team
+    email: team@sharedvolume.io
+dependencies: []
+annotations:
+  category: Storage

@@ -1,0 +1,24 @@
+# Minimal deployment values for shared-volume Helm chart
+# Deploy only the shared volume controller without NFS server controller
+
+nfsServer:
+  enabled: false
+
+sharedVolume:
+  enabled: true
+  
+  image:
+    pullPolicy: IfNotPresent
+  
+  replicaCount: 1
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  
+  certManager:
+    enabled: true

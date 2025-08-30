@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "global": {
+      "type": "object",
+      "properties": {
+        "imageRegistry": {
+          "type": "string",
+          "description": "Global image registry"
+        },
+        "imagePullSecrets": {
+          "type": "array",
+          "description": "Global image pull secrets"
+        }
+      }
+    },
+    "nfsServer": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable NFS Server controller"
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "registry": {
+              "type": "string",
+              "description": "NFS Server controller image registry"
+            },
+            "repository": {
+              "type": "string",
+              "description": "NFS Server controller image repository"
+            },
+            "tag": {
+              "type": "string",
+              "description": "NFS Server controller image tag"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "enum": ["Always", "IfNotPresent", "Never"],
+              "description": "NFS Server controller image pull policy"
+            }
+          },
+          "required": ["registry", "repository", "tag", "pullPolicy"]
+        },
+        "namespace": {
+          "type": "string",
+          "description": "NFS Server controller namespace"
+        },
+        "replicaCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of NFS Server controller replicas"
+        }
+      },
+      "required": ["enabled"]
+    },
+    "sharedVolume": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable Shared Volume controller"
+        },
+        "image": {
+          "type": "object",
+          "properties": {
+            "registry": {
+              "type": "string",
+              "description": "Shared Volume controller image registry"
+            },
+            "repository": {
+              "type": "string",
+              "description": "Shared Volume controller image repository"
+            },
+            "tag": {
+              "type": "string",
+              "description": "Shared Volume controller image tag"
+            },
+            "pullPolicy": {
+              "type": "string",
+              "enum": ["Always", "IfNotPresent", "Never"],
+              "description": "Shared Volume controller image pull policy"
+            }
+          },
+          "required": ["registry", "repository", "tag", "pullPolicy"]
+        },
+        "namespace": {
+          "type": "string",
+          "description": "Shared Volume controller namespace"
+        },
+        "replicaCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number of Shared Volume controller replicas"
+        },
+        "certManager": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable cert-manager integration"
+            }
+          },
+          "required": ["enabled"]
+        }
+      },
+      "required": ["enabled"]
+    },
+    "nameOverride": {
+      "type": "string",
+      "description": "String to partially override shared-volume.fullname"
+    },
+    "fullnameOverride": {
+      "type": "string",
+      "description": "String to fully override shared-volume.fullname"
+    }
+  }
+}

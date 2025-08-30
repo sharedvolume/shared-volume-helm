@@ -1,0 +1,33 @@
+{{- if .Values.sharedVolume.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "shared-volume.sharedVolume.labels" . | nindent 4 }}
+  name: shared-volume-controller-controller-manager-metrics-service
+  namespace: {{ .Values.sharedVolume.namespace }}
+spec:
+  ports:
+  - name: https
+    port: {{ .Values.sharedVolume.metricsService.port }}
+    protocol: TCP
+    targetPort: {{ .Values.sharedVolume.metricsService.targetPort }}
+  selector:
+    {{- include "shared-volume.sharedVolume.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "shared-volume.sharedVolume.labels" . | nindent 4 }}
+  name: shared-volume-controller-webhook-service
+  namespace: {{ .Values.sharedVolume.namespace }}
+spec:
+  ports:
+  - name: webhook-server
+    port: {{ .Values.sharedVolume.webhookService.port }}
+    protocol: TCP
+    targetPort: {{ .Values.sharedVolume.webhookService.targetPort }}
+  selector:
+    {{- include "shared-volume.sharedVolume.selectorLabels" . | nindent 4 }}
+{{- end }}

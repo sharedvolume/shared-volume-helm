@@ -1,0 +1,81 @@
+{{- if .Values.sharedVolume.enabled }}
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  {{- if .Values.sharedVolume.certManager.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Values.sharedVolume.namespace }}/shared-volume-controller-serving-cert
+  {{- end }}
+  name: shared-volume-controller-mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: shared-volume-controller-webhook-service
+      namespace: {{ .Values.sharedVolume.namespace }}
+      path: /mutate-v1-pod
+  failurePolicy: Fail
+  name: mpod.kb.io
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - pods
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  {{- if .Values.sharedVolume.certManager.enabled }}
+  annotations:
+    cert-manager.io/inject-ca-from: {{ .Values.sharedVolume.namespace }}/shared-volume-controller-serving-cert
+  {{- end }}
+  name: shared-volume-controller-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: shared-volume-controller-webhook-service
+      namespace: {{ .Values.sharedVolume.namespace }}
+      path: /validate-sv-sharedvolume-io-v1alpha1-clustersharedvolume
+  failurePolicy: Fail
+  name: vclustersharedvolume.kb.io
+  rules:
+  - apiGroups:
+    - sv.sharedvolume.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - clustersharedvolumes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: shared-volume-controller-webhook-service
+      namespace: {{ .Values.sharedVolume.namespace }}
+      path: /validate-sv-sharedvolume-io-v1alpha1-sharedvolume
+  failurePolicy: Fail
+  name: vsharedvolume.kb.io
+  rules:
+  - apiGroups:
+    - sv.sharedvolume.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - sharedvolumes
+  sideEffects: None
+{{- end }}

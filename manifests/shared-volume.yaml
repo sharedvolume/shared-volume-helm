@@ -1,0 +1,1103 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+    control-plane: controller-manager
+  name: shared-volume-controller-system
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: clustersharedvolumes.sv.sharedvolume.io
+spec:
+  group: sv.sharedvolume.io
+  names:
+    kind: ClusterSharedVolume
+    listKind: ClusterSharedVolumeList
+    plural: clustersharedvolumes
+    shortNames:
+    - csv
+    singular: clustersharedvolume
+  scope: Cluster
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.phase
+      name: Phase
+      type: string
+    - jsonPath: .status.nfsServerAddress
+      name: NFS Address
+      type: string
+    - jsonPath: .spec.mountPath
+      name: Mount Path
+      type: string
+    - jsonPath: .spec.syncInterval
+      name: SyncInterval
+      type: string
+    - jsonPath: .spec.storage.capacity
+      name: Capacity
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: ClusterSharedVolume is the Schema for the clustersharedvolumes
+          API
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ClusterSharedVolumeSpec defines the desired state of ClusterSharedVolume
+            properties:
+              mountPath:
+                type: string
+              nfsServer:
+                description: NfsServerSpec defines the NFS server configuration.
+                properties:
+                  image:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                  path:
+                    type: string
+                  url:
+                    type: string
+                type: object
+              referenceValue:
+                type: string
+              resourceNamespace:
+                type: string
+              source:
+                description: VolumeSourceSpec defines the source for the shared volume.
+                properties:
+                  git:
+                    description: GitSourceSpec defines Git source configuration.
+                    properties:
+                      branch:
+                        type: string
+                      password:
+                        type: string
+                      passwordFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      privateKey:
+                        type: string
+                      privateKeyFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      url:
+                        type: string
+                      user:
+                        type: string
+                    required:
+                    - url
+                    type: object
+                  http:
+                    description: HTTPSourceSpec defines HTTP source configuration.
+                    properties:
+                      url:
+                        type: string
+                    required:
+                    - url
+                    type: object
+                  s3:
+                    description: S3SourceSpec defines S3 source configuration.
+                    properties:
+                      accessKey:
+                        type: string
+                      accessKeyFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      bucketName:
+                        type: string
+                      endpointUrl:
+                        type: string
+                      path:
+                        type: string
+                      region:
+                        type: string
+                      secretKey:
+                        type: string
+                      secretKeyFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                    required:
+                    - bucketName
+                    - endpointUrl
+                    - region
+                    type: object
+                  ssh:
+                    description: SSHSourceSpec defines SSH source configuration.
+                    properties:
+                      host:
+                        type: string
+                      password:
+                        type: string
+                      passwordFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      path:
+                        type: string
+                      port:
+                        type: integer
+                      privateKey:
+                        type: string
+                      privateKeyFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      user:
+                        type: string
+                    required:
+                    - host
+                    type: object
+                type: object
+              storage:
+                description: StorageSpec defines storage configuration.
+                properties:
+                  accessMode:
+                    type: string
+                  capacity:
+                    type: string
+                required:
+                - capacity
+                type: object
+              storageClassName:
+                type: string
+              syncInterval:
+                type: string
+              syncTimeout:
+                type: string
+            required:
+            - mountPath
+            type: object
+          status:
+            description: ClusterSharedVolumeStatus defines the observed state of ClusterSharedVolume
+            properties:
+              message:
+                description: Message provides additional information about the current
+                  state
+                type: string
+              nfsServerAddress:
+                description: NfsServerAddress is the address of the NFS server
+                type: string
+              persistentVolumeClaimName:
+                description: PersistentVolumeClaimName is the name of the created
+                  PVC
+                type: string
+              persistentVolumeName:
+                description: PersistentVolumeName is the name of the created PV
+                type: string
+              phase:
+                description: Phase represents the current phase of the ClusterSharedVolume
+                type: string
+              serviceName:
+                description: ServiceName is the name of the service exposing the NFS
+                  server
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.18.0
+  name: sharedvolumes.sv.sharedvolume.io
+spec:
+  group: sv.sharedvolume.io
+  names:
+    kind: SharedVolume
+    listKind: SharedVolumeList
+    plural: sharedvolumes
+    shortNames:
+    - sv
+    singular: sharedvolume
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - description: Current Phase
+      jsonPath: .status.phase
+      name: Phase
+      type: string
+    - description: NFS Server Address
+      jsonPath: .status.nfsServerAddress
+      name: NFS Address
+      type: string
+    - description: Mount Path
+      jsonPath: .spec.mountPath
+      name: Mount Path
+      type: string
+    - description: Sync Interval
+      jsonPath: .spec.syncInterval
+      name: SyncInterval
+      type: string
+    - description: Storage Capacity
+      jsonPath: .spec.storage.capacity
+      name: Capacity
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: SharedVolume is the Schema for the sharedvolumes API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: SharedVolumeSpec defines the desired state of SharedVolume.
+            properties:
+              mountPath:
+                type: string
+              nfsServer:
+                description: NfsServerSpec defines the NFS server configuration.
+                properties:
+                  image:
+                    type: string
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                  path:
+                    type: string
+                  url:
+                    type: string
+                type: object
+              referenceValue:
+                type: string
+              resourceNamespace:
+                type: string
+              source:
+                description: VolumeSourceSpec defines the source for the shared volume.
+                properties:
+                  git:
+                    description: GitSourceSpec defines Git source configuration.
+                    properties:
+                      branch:
+                        type: string
+                      password:
+                        type: string
+                      passwordFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      privateKey:
+                        type: string
+                      privateKeyFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      url:
+                        type: string
+                      user:
+                        type: string
+                    required:
+                    - url
+                    type: object
+                  http:
+                    description: HTTPSourceSpec defines HTTP source configuration.
+                    properties:
+                      url:
+                        type: string
+                    required:
+                    - url
+                    type: object
+                  s3:
+                    description: S3SourceSpec defines S3 source configuration.
+                    properties:
+                      accessKey:
+                        type: string
+                      accessKeyFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      bucketName:
+                        type: string
+                      endpointUrl:
+                        type: string
+                      path:
+                        type: string
+                      region:
+                        type: string
+                      secretKey:
+                        type: string
+                      secretKeyFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                    required:
+                    - bucketName
+                    - endpointUrl
+                    - region
+                    type: object
+                  ssh:
+                    description: SSHSourceSpec defines SSH source configuration.
+                    properties:
+                      host:
+                        type: string
+                      password:
+                        type: string
+                      passwordFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      path:
+                        type: string
+                      port:
+                        type: integer
+                      privateKey:
+                        type: string
+                      privateKeyFromSecret:
+                        properties:
+                          key:
+                            type: string
+                          name:
+                            type: string
+                          namespace:
+                            type: string
+                        required:
+                        - key
+                        - name
+                        type: object
+                      user:
+                        type: string
+                    required:
+                    - host
+                    type: object
+                type: object
+              storage:
+                description: StorageSpec defines storage configuration.
+                properties:
+                  accessMode:
+                    type: string
+                  capacity:
+                    type: string
+                required:
+                - capacity
+                type: object
+              storageClassName:
+                type: string
+              syncInterval:
+                type: string
+              syncTimeout:
+                type: string
+            required:
+            - mountPath
+            type: object
+          status:
+            description: SharedVolumeStatus defines the observed state of SharedVolume.
+            properties:
+              message:
+                description: Message provides additional information about the current
+                  phase
+                type: string
+              nfsServerAddress:
+                description: NfsServerAddress is the address where the NFS server
+                  can be accessed
+                type: string
+              persistentVolumeClaimName:
+                description: PersistentVolumeClaimName is the name of the associated
+                  PVC
+                type: string
+              persistentVolumeName:
+                description: PersistentVolumeName is the name of the associated PV
+                type: string
+              phase:
+                description: Phase indicates the current phase of the SharedVolume
+                  (Pending, Preparing, Ready)
+                type: string
+              serviceName:
+                description: ServiceName is the name of the associated Service
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-controller-manager
+  namespace: shared-volume-controller-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-leader-election-role
+  namespace: shared-volume-controller-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - coordination.k8s.io
+  resources:
+  - leases
+  verbs:
+  - get
+  - list
+  - watch
+  - create
+  - update
+  - patch
+  - delete
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shared-volume-controller-manager-role
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  - persistentvolumeclaims
+  - persistentvolumes
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - namespaces
+  verbs:
+  - create
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - persistentvolumeclaims/finalizers
+  - persistentvolumes/finalizers
+  - pods/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  - replicasets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sharedvolume.io
+  resources:
+  - nfsservers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - clustersharedvolumes
+  - sharedvolumes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - clustersharedvolumes/finalizers
+  - sharedvolumes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - clustersharedvolumes/status
+  - sharedvolumes/status
+  verbs:
+  - get
+  - patch
+  - update
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shared-volume-controller-metrics-auth-role
+rules:
+- apiGroups:
+  - authentication.k8s.io
+  resources:
+  - tokenreviews
+  verbs:
+  - create
+- apiGroups:
+  - authorization.k8s.io
+  resources:
+  - subjectaccessreviews
+  verbs:
+  - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shared-volume-controller-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-sharedvolume-admin-role
+rules:
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - sharedvolumes
+  verbs:
+  - '*'
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - sharedvolumes/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-sharedvolume-editor-role
+rules:
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - sharedvolumes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - sharedvolumes/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-sharedvolume-viewer-role
+rules:
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - sharedvolumes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - sv.sharedvolume.io
+  resources:
+  - sharedvolumes/status
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-leader-election-rolebinding
+  namespace: shared-volume-controller-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: shared-volume-controller-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: shared-volume-controller-controller-manager
+  namespace: shared-volume-controller-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-manager-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: shared-volume-controller-manager-role
+subjects:
+- kind: ServiceAccount
+  name: shared-volume-controller-controller-manager
+  namespace: shared-volume-controller-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: shared-volume-controller-metrics-auth-rolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: shared-volume-controller-metrics-auth-role
+subjects:
+- kind: ServiceAccount
+  name: shared-volume-controller-controller-manager
+  namespace: shared-volume-controller-system
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+    control-plane: controller-manager
+  name: shared-volume-controller-controller-manager-metrics-service
+  namespace: shared-volume-controller-system
+spec:
+  ports:
+  - name: https
+    port: 8443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app.kubernetes.io/name: shared-volume-controller
+    control-plane: controller-manager
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+    control-plane: controller-manager
+  name: shared-volume-controller-webhook-service
+  namespace: shared-volume-controller-system
+spec:
+  ports:
+  - name: webhook-server
+    port: 443
+    protocol: TCP
+    targetPort: 9443
+  selector:
+    app.kubernetes.io/name: shared-volume-controller
+    control-plane: controller-manager
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+    control-plane: controller-manager
+  name: shared-volume-controller-controller-manager
+  namespace: shared-volume-controller-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: shared-volume-controller
+      control-plane: controller-manager
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: manager
+      labels:
+        app.kubernetes.io/name: shared-volume-controller
+        control-plane: controller-manager
+    spec:
+      containers:
+      - args:
+        - --metrics-bind-address=:8443
+        - --leader-elect
+        - --health-probe-bind-address=:8081
+        - --metrics-cert-path=/tmp/k8s-metrics-server/metrics-certs
+        - --webhook-cert-path=/tmp/k8s-webhook-server/serving-certs
+        command:
+        - /manager
+        image: docker.io/sharedvolume/shared-volume-controller:0.0.229
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 20
+        name: manager
+        ports:
+        - containerPort: 9443
+          name: webhook-server
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /readyz
+            port: 8081
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+        volumeMounts:
+        - mountPath: /tmp/k8s-metrics-server/metrics-certs
+          name: metrics-certs
+          readOnly: true
+        - mountPath: /tmp/k8s-webhook-server/serving-certs
+          name: webhook-certs
+          readOnly: true
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: shared-volume-controller-controller-manager
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: metrics-certs
+        secret:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          - key: tls.crt
+            path: tls.crt
+          - key: tls.key
+            path: tls.key
+          optional: false
+          secretName: metrics-server-cert
+      - name: webhook-certs
+        secret:
+          secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-metrics-certs
+  namespace: shared-volume-controller-system
+spec:
+  dnsNames:
+  - shared-volume-controller-controller-manager-metrics-service.shared-volume-controller-system.svc
+  - shared-volume-controller-controller-manager-metrics-service.shared-volume-controller-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: shared-volume-controller-selfsigned-issuer
+  secretName: metrics-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-serving-cert
+  namespace: shared-volume-controller-system
+spec:
+  dnsNames:
+  - shared-volume-controller-webhook-service.shared-volume-controller-system.svc
+  - shared-volume-controller-webhook-service.shared-volume-controller-system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: shared-volume-controller-selfsigned-issuer
+  secretName: webhook-server-cert
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: shared-volume-controller
+  name: shared-volume-controller-selfsigned-issuer
+  namespace: shared-volume-controller-system
+spec:
+  selfSigned: {}
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: MutatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: shared-volume-controller-system/shared-volume-controller-serving-cert
+  name: shared-volume-controller-mutating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: shared-volume-controller-webhook-service
+      namespace: shared-volume-controller-system
+      path: /mutate-v1-pod
+  failurePolicy: Fail
+  name: mpod.kb.io
+  rules:
+  - apiGroups:
+    - ""
+    apiVersions:
+    - v1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - pods
+  sideEffects: None
+---
+apiVersion: admissionregistration.k8s.io/v1
+kind: ValidatingWebhookConfiguration
+metadata:
+  annotations:
+    cert-manager.io/inject-ca-from: shared-volume-controller-system/shared-volume-controller-serving-cert
+  name: shared-volume-controller-validating-webhook-configuration
+webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: shared-volume-controller-webhook-service
+      namespace: shared-volume-controller-system
+      path: /validate-sv-sharedvolume-io-v1alpha1-clustersharedvolume
+  failurePolicy: Fail
+  name: vclustersharedvolume.kb.io
+  rules:
+  - apiGroups:
+    - sv.sharedvolume.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - clustersharedvolumes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: shared-volume-controller-webhook-service
+      namespace: shared-volume-controller-system
+      path: /validate-sv-sharedvolume-io-v1alpha1-sharedvolume
+  failurePolicy: Fail
+  name: vsharedvolume.kb.io
+  rules:
+  - apiGroups:
+    - sv.sharedvolume.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - sharedvolumes
+  sideEffects: None

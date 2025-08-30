@@ -1,0 +1,17 @@
+{{- if .Values.sharedVolume.enabled }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  labels:
+    {{- include "shared-volume.sharedVolume.labels" . | nindent 4 }}
+  name: shared-volume-controller-leader-election-rolebinding
+  namespace: {{ .Values.sharedVolume.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: shared-volume-controller-leader-election-role
+subjects:
+- kind: ServiceAccount
+  name: {{ include "shared-volume.sharedVolume.serviceAccountName" . }}
+  namespace: {{ .Values.sharedVolume.namespace }}
+{{- end }}

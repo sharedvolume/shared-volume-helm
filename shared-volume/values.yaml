@@ -1,0 +1,217 @@
+# Default values for shared-volume.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+global:
+  # -- Global image registry
+  imageRegistry: ""
+  # -- Global image pull secrets
+  imagePullSecrets: []
+
+# NFS Server Controller configuration
+nfsServer:
+  # -- Enable NFS Server controller
+  enabled: true
+  
+  # -- NFS Server controller image configuration
+  image:
+    registry: docker.io
+    repository: sharedvolume/nfs-server-controller
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  
+  # -- NFS Server controller namespace
+  namespace: nfs-server-controller-system
+  
+  # -- NFS Server controller replica count
+  replicaCount: 1
+  
+  # -- NFS server image for NFS server instances
+  nfsServerImage: "sharedvolume/nfs-server:0.1.0-alpine-3.22.0"
+  
+  # -- NFS Server controller resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  
+  # -- NFS Server controller node affinity
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
+          - arm64
+        - key: kubernetes.io/os
+          operator: In
+          values:
+          - linux
+  
+  # -- NFS Server controller security context
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  
+  # -- NFS Server controller container security context
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+  
+  # -- NFS Server controller service account
+  serviceAccount:
+    # -- Specifies whether a service account should be created
+    create: true
+    # -- Annotations to add to the service account
+    annotations: {}
+    # -- The name of the service account to use.
+    name: "nfs-server-controller-controller-manager"
+  
+  # -- NFS Server controller metrics service
+  metricsService:
+    port: 8443
+    targetPort: 8443
+  
+  # -- NFS Server controller health probe configuration
+  healthProbe:
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    readinessProbe:
+      httpGet:
+        path: /readyz
+        port: 8081
+      initialDelaySeconds: 5
+      periodSeconds: 10
+
+# Shared Volume Controller configuration
+sharedVolume:
+  # -- Enable Shared Volume controller
+  enabled: true
+  
+  # -- Shared Volume controller image configuration
+  image:
+    registry: docker.io
+    repository: sharedvolume/shared-volume-controller
+    tag: "0.1.0"
+    pullPolicy: IfNotPresent
+  
+  # -- Shared Volume controller namespace
+  namespace: shared-volume-controller-system
+  
+  # -- Shared Volume controller replica count
+  replicaCount: 1
+  
+  # -- Volume syncer image for shared volume operations
+  volumeSyncerImage: "sharedvolume/volume-syncer:0.1.0"
+  
+  # -- Shared Volume controller resource limits and requests
+  resources:
+    limits:
+      cpu: 500m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 64Mi
+  
+  # -- Shared Volume controller security context
+  securityContext:
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  
+  # -- Shared Volume controller container security context
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+  
+  # -- Shared Volume controller service account
+  serviceAccount:
+    # -- Specifies whether a service account should be created
+    create: true
+    # -- Annotations to add to the service account
+    annotations: {}
+    # -- The name of the service account to use.
+    name: "shared-volume-controller-controller-manager"
+  
+  # -- Shared Volume controller metrics service
+  metricsService:
+    port: 8443
+    targetPort: 8443
+  
+  # -- Shared Volume controller webhook service
+  webhookService:
+    port: 443
+    targetPort: 9443
+  
+  # -- Shared Volume controller health probe configuration
+  healthProbe:
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 8081
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    readinessProbe:
+      httpGet:
+        path: /readyz
+        port: 8081
+      initialDelaySeconds: 5
+      periodSeconds: 10
+  
+  # -- Certificate manager configuration
+  certManager:
+    # -- Enable cert-manager integration
+    enabled: true
+    # -- Certificate issuer configuration
+    issuer:
+      name: shared-volume-controller-selfsigned-issuer
+    # -- Metrics certificate configuration
+    metricsCert:
+      secretName: metrics-server-cert
+      dnsNames:
+        - shared-volume-controller-controller-manager-metrics-service.shared-volume-controller-system.svc
+        - shared-volume-controller-controller-manager-metrics-service.shared-volume-controller-system.svc.cluster.local
+    # -- Webhook certificate configuration
+    webhookCert:
+      secretName: webhook-server-cert
+      dnsNames:
+        - shared-volume-controller-webhook-service.shared-volume-controller-system.svc
+        - shared-volume-controller-webhook-service.shared-volume-controller-system.svc.cluster.local
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Pod security context
+podSecurityContext: {}
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity
+affinity: {}
+
+# -- Additional labels
+additionalLabels: {}
+
+# -- Name override
+nameOverride: ""
+
+# -- Full name override
+fullnameOverride: ""

@@ -1,0 +1,56 @@
+name: Release Helm Chart
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Configure Git
+      run: |
+        git config user.name "$GITHUB_ACTOR"
+        git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+    - name: Install Helm
+      uses: azure/setup-helm@v3
+      with:
+        version: '3.12.1'
+
+    - name: Set version from tag
+      run: |
+        # Extract version from tag (remove 'v' prefix)
+        VERSION=${GITHUB_REF#refs/tags/v}
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
+        echo "Chart version: $VERSION"
+
+    - name: Update Chart.yaml version
+      run: |
+        # Update both version and appVersion in Chart.yaml
+        sed -i "s/^version:.*/version: $VERSION/" shared-volume/Chart.yaml
+        sed -i "s/^appVersion:.*/appVersion: \"$VERSION\"/" shared-volume/Chart.yaml
+        echo "Updated Chart.yaml:"
+        grep -E "^(version|appVersion):" shared-volume/Chart.yaml
+
+    - name: Package Helm chart
+      run: |
+        cd shared-volume
+        helm package . --destination ../
+        cd ..
+        echo "Packaged chart: shared-volume-$VERSION.tgz"
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          *.tgz
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.REPO_TOKEN }}

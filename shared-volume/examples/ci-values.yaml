@@ -1,0 +1,58 @@
+# CI/CD values for automated testing
+# Optimized for fast deployment and testing in CI environments
+
+nfsServer:
+  enabled: true
+  
+  image:
+    pullPolicy: IfNotPresent
+  
+  replicaCount: 1
+  
+  resources:
+    limits:
+      cpu: 100m
+      memory: 64Mi
+    requests:
+      cpu: 5m
+      memory: 32Mi
+  
+  healthProbe:
+    livenessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    readinessProbe:
+      initialDelaySeconds: 2
+      periodSeconds: 5
+
+sharedVolume:
+  enabled: true
+  
+  image:
+    pullPolicy: IfNotPresent
+  
+  replicaCount: 1
+  
+  resources:
+    limits:
+      cpu: 100m
+      memory: 64Mi
+    requests:
+      cpu: 5m
+      memory: 32Mi
+  
+  certManager:
+    enabled: false
+  
+  healthProbe:
+    livenessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 10
+    readinessProbe:
+      initialDelaySeconds: 2
+      periodSeconds: 5
+
+# CI/CD specific annotations
+podAnnotations:
+  ci-cd: "true"
+  test-environment: "automated"

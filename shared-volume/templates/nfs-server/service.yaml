@@ -1,0 +1,17 @@
+{{- if .Values.nfsServer.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    {{- include "shared-volume.nfsServer.labels" . | nindent 4 }}
+  name: nfs-server-controller-controller-manager-metrics-service
+  namespace: {{ .Values.nfsServer.namespace }}
+spec:
+  ports:
+  - name: https
+    port: {{ .Values.nfsServer.metricsService.port }}
+    protocol: TCP
+    targetPort: {{ .Values.nfsServer.metricsService.targetPort }}
+  selector:
+    {{- include "shared-volume.nfsServer.selectorLabels" . | nindent 4 }}
+{{- end }}

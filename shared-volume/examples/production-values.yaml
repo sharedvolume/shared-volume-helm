@@ -1,0 +1,84 @@
+# Production deployment values for shared-volume Helm chart
+# This configuration is optimized for production environments
+
+global:
+  imageRegistry: "your-registry.com"
+  imagePullSecrets:
+    - name: registry-secret
+
+nfsServer:
+  enabled: true
+  
+  image:
+    tag: "0.0.20"
+    pullPolicy: Always
+  
+  replicaCount: 2
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/arch
+          operator: In
+          values:
+          - amd64
+        - key: node-role.kubernetes.io/worker
+          operator: Exists
+
+sharedVolume:
+  enabled: true
+  
+  image:
+    tag: "0.0.229"
+    pullPolicy: Always
+  
+  replicaCount: 2
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+  
+  certManager:
+    enabled: true
+
+# Production pod configuration
+podAnnotations:
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+# Node selection for production workloads
+nodeSelector:
+  kubernetes.io/os: linux
+
+# Tolerations for dedicated nodes
+tolerations:
+  - key: "workload"
+    operator: "Equal"
+    value: "storage"
+    effect: "NoSchedule"
+
+# Anti-affinity to spread replicas across nodes
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - shared-volume
+        topologyKey: kubernetes.io/hostname
